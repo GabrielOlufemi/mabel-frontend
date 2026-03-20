@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabel — Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --border: #e8e8e4;
+      --border-strong: #c8c8c2;
+      --text: #1a1a18;
+      --text-2: #4a4a46;
+      --text-3: #9a9a94;
+      --green: #3d8c6e;
+      --green-bg: #eef7f3;
+      --green-border: #c4e2d6;
+      --red: #c0392b;
+      --red-bg: #fef0ee;
+      --red-border: #f5c6c0;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: max(24px, env(safe-area-inset-top))
+               max(24px, env(safe-area-inset-right))
+               max(24px, env(safe-area-inset-bottom))
+               max(24px, env(safe-area-inset-left));
+    }
+    @media (min-height: 700px) {
+      body { align-items: center; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.55;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .auth-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      animation: fadeUp 0.38s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+    }
+
+    .auth-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .auth-title .gray { color: var(--text-3); font-style: italic; }
+
+    .auth-sub {
+      font-size: 14px;
+      color: var(--text-3);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 7px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+    .form-input::placeholder { color: var(--text-3); }
+    .form-input:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 3px rgba(26,26,24,.05);
+      background: white;
+    }
+    .form-input.invalid {
+      border-color: var(--red-border);
+      box-shadow: 0 0 0 3px rgba(192,57,43,.06);
+    }
+    .form-input.valid {
+      border-color: var(--green-border);
+    }
+
+    .input-wrap { position: relative; }
+    .input-wrap .form-input { padding-right: 44px; }
+    .pw-toggle {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); display: grid; place-items: center;
+      padding: 8px; border-radius: 4px; transition: color 0.12s;
+      min-width: 44px; min-height: 44px;
+    }
+    .pw-toggle:hover { color: var(--text-2); }
+
+    .pw-strength { margin-top: 8px; display: none; }
+    .pw-strength.visible { display: block; }
+    .pw-strength-bar {
+      height: 3px; background: var(--border);
+      border-radius: 2px; overflow: hidden; margin-bottom: 5px;
+    }
+    .pw-strength-fill {
+      height: 100%; border-radius: 2px;
+      transition: width 0.3s ease, background 0.3s ease; width: 0%;
+    }
+    .pw-strength-label { font-size: 11.5px; color: var(--text-3); font-family: var(--mono); }
+
+    .form-hint { font-size: 12px; color: var(--text-3); margin-top: 6px; line-height: 1.5; }
+
+    .form-error {
+      display: none; align-items: center; gap: 8px;
+      background: var(--red-bg); border: 1px solid var(--red-border);
+      border-radius: var(--radius-sm); padding: 10px 12px;
+      font-size: 13px; color: var(--red); margin-bottom: 18px;
+      animation: fadeUp 0.2s ease;
+    }
+    .form-error.visible { display: flex; }
+
+    .form-terms {
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-bottom: 20px; margin-top: 4px;
+    }
+    .form-terms input[type="checkbox"] {
+      width: 15px; height: 15px; accent-color: var(--text);
+      cursor: pointer; flex-shrink: 0; margin-top: 2px;
+    }
+    .form-terms label { font-size: 13px; color: var(--text-3); line-height: 1.55; cursor: pointer; }
+    .form-terms label a { color: var(--text-2); font-weight: 500; text-decoration: none; }
+    .form-terms label a:hover { color: var(--text); }
+
+    .btn-primary {
+      width: 100%; background: var(--text); color: white; border: none;
+      border-radius: var(--radius); padding: 13px; font-family: var(--font);
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.01em;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.87; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35); border-top-color: white;
+      border-radius: 50%; animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-primary.loading .btn-text { display: none; }
+    .btn-primary.loading .btn-spinner { display: block; }
+
+    .auth-success {
+      display: none; flex-direction: column; align-items: center;
+      text-align: center; gap: 14px; padding: 12px 0 4px;
+    }
+    .auth-success.visible { display: flex; animation: fadeUp 0.3s ease; }
+    .success-icon {
+      width: 52px; height: 52px; background: var(--green-bg);
+      border: 1px solid var(--green-border); border-radius: 50%;
+      display: grid; place-items: center; color: var(--green);
+    }
+    .success-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--text); }
+    .success-sub { font-size: 14px; color: var(--text-3); line-height: 1.65; }
+    .success-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 600; color: var(--text-2); text-decoration: none;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 10px 20px; transition: border-color 0.15s, color 0.15s; margin-top: 4px;
+    }
+    .success-link:hover { border-color: var(--border-strong); color: var(--text); }
+
+    .auth-footer {
+      text-align: center; margin-top: 24px;
+      font-size: 13.5px; color: var(--text-3);
+    }
+    .auth-footer a { color: var(--text-2); font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .auth-card { padding: 24px 18px; border-radius: 14px; }
+      .auth-title { font-size: 24px; }
+      .auth-wrap { padding-top: 16px; padding-bottom: 16px; }
+      .form-row-2 { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div id="form-content">
+        <h1 class="auth-title">Start <span class="gray">learning.</span></h1>
+        <p class="auth-sub">Create your free account and upload your first document.</p>
+
+        <div class="form-error" id="form-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="error-text">Something went wrong.</span>
+        </div>
+
+        <form id="reg-form" novalidate>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="first">First name</label>
+              <input class="form-input" type="text" id="first" placeholder="Van" autocomplete="given-name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="last">Last name</label>
+              <input class="form-input" type="text" id="last" placeholder="Dijk" autocomplete="family-name" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email address</label>
+            <input class="form-input" type="email" id="email" placeholder="vandijk@gmail.com" autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-wrap">
+              <input class="form-input" type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Toggle password">
+                <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="pw-strength" id="pw-strength">
+              <div class="pw-strength-bar">
+                <div class="pw-strength-fill" id="pw-fill"></div>
+              </div>
+              <div class="pw-strength-label" id="pw-label">Weak</div>
+            </div>
+          </div>
+
+          <div class="form-terms">
+            <input type="checkbox" id="terms" />
+            <label for="terms">
+              I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. MABEL may use anonymized interactions to improve its study tools.
+            </label>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submit-btn">
+            <span class="btn-text">Create account</span>
+            <div class="btn-spinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <div class="auth-success" id="success-state">
+        <div class="success-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="success-title">You're in!</div>
+          <p class="success-sub" style="margin-top:6px">Your account has been created.<br>Time to start learning.</p>
+        </div>
+        <a href="../views/chat.html" class="success-link">
+          Go to MABEL
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="auth-footer" id="auth-footer">
+      Already have an account? <a href="login.html">Sign in →</a>
+    </div>
+  </div>
+
+  <script>
+    // Word cycler
+    (function () {
+      const WORDS = [
+        'learning','studying','innovating','discovering','researching',
+        'exploring','growing','creating','achieving','excelling'
+      ];
+      const INTERVAL = 3000, FADE = 250;
+      const el = document.querySelector('.auth-title .gray');
+      if (el) {
+        el.style.display = 'inline-block';
+        el.style.transition = `opacity ${FADE}ms ease, transform ${FADE}ms ease`;
+        let i = 0;
+        setInterval(() => {
+          i = (i + 1) % WORDS.length;
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-5px)';
+          setTimeout(() => {
+            el.textContent = WORDS[i] + '.';
+            el.style.transition = 'none';
+            el.style.transform = 'translateY(5px)';
+            el.offsetHeight;
+            el.style.transition = `opacity ${FADE}ms ease, transform ${FADE}ms ease`;
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          }, FADE);
+        }, INTERVAL);
+      }
+    })();
+  </script>
+  <script>
+    // Password toggle
+    const pwToggle = document.getElementById('pw-toggle');
+    const pwInput  = document.getElementById('password');
+    const eyeIcon  = document.getElementById('eye-icon');
+    let visible = false;
+    pwToggle.addEventListener('click', () => {
+      visible = !visible;
+      pwInput.type = visible ? 'text' : 'password';
+      eyeIcon.innerHTML = visible
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    });
+
+    // Password strength
+    const pwStrength = document.getElementById('pw-strength');
+    const pwFill     = document.getElementById('pw-fill');
+    const pwLabel    = document.getElementById('pw-label');
+
+    const levels = [
+      { label: 'Weak',   color: '#e74c3c', pct: '20%'  },
+      { label: 'Fair',   color: '#e67e22', pct: '45%'  },
+      { label: 'Good',   color: '#f1c40f', pct: '68%'  },
+      { label: 'Strong', color: '#27ae60', pct: '100%' },
+    ];
+
+    function getStrength(pw) {
+      let score = 0;
+      if (pw.length >= 8)  score++;
+      if (pw.length >= 12) score++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+      return Math.min(Math.floor(score / 1.25), 3);
+    }
+
+    pwInput.addEventListener('input', () => {
+      const pw = pwInput.value;
+      if (!pw) { pwStrength.classList.remove('visible'); return; }
+      pwStrength.classList.add('visible');
+      const lvl = levels[getStrength(pw)];
+      pwFill.style.width = lvl.pct;
+      pwFill.style.background = lvl.color;
+      pwLabel.textContent = lvl.label;
+      pwLabel.style.color = lvl.color;
+    });
+
+    // Form submit
+    const form      = document.getElementById('reg-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorBox  = document.getElementById('form-error');
+    const errorText = document.getElementById('error-text');
+
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorBox.classList.add('visible');
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      errorBox.classList.remove('visible');
+
+      const first    = document.getElementById('first').value.trim();
+      const last     = document.getElementById('last').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const terms    = document.getElementById('terms').checked;
+
+      if (!first || !last)      { showError('Please enter your full name.'); return; }
+      if (!email.includes('@')) { showError('Please enter a valid email address.'); return; }
+      if (password.length < 8)  { showError('Password must be at least 8 characters.'); return; }
+      if (!terms)               { showError('Please accept the terms to continue.'); return; }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('http://localhost:8000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ first_name: first, last_name: last, email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.detail || 'Registration failed. Please try again.');
+          return;
+        }
+
+        // store token and user info
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user_id', data.user_id);
+        localStorage.setItem('first_name', data.first_name);
+        localStorage.setItem('email', data.email);
+
+        // show success state
+        document.getElementById('form-content').style.display = 'none';
+        document.getElementById('success-state').classList.add('visible');
+        document.getElementById('auth-footer').style.display = 'none';
+
+      } catch (err) {
+        showError('Could not connect to server. Try again.');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

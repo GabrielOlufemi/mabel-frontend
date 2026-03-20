@@ -1,0 +1,57 @@
+<!-- HOW TO USE nav.js IN EACH PAGE -->
+<!-- ─────────────────────────────────────────────────────────── -->
+
+<!-- 1. In <head>: add the Google Fonts link + nav.css (remove all the
+        sidebar/nav CSS that was copy-pasted in each page) -->
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabel — Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+
+  <!-- ✅ Shared nav styles -->
+  <link rel="stylesheet" href="nav.css">
+
+  <style>
+    /* Only page-specific styles go here — no more sidebar/nav CSS */
+    /* ... quiz styles ... */
+  </style>
+</head>
+
+
+<!-- 2. In <body>: set NAV_ACTIVE BEFORE loading nav.js, then remove ALL
+        the sidebar/nav HTML (the <nav>, <aside>, backdrop, trigger buttons).
+        nav.js injects them automatically. -->
+
+<body>
+
+  <!-- ✅ Tell nav.js which item to highlight, then load it -->
+  <script>NAV_ACTIVE = 'quiz';</script>
+  <script src="nav.js"></script>
+
+  <!-- Your page layout starts here (no more manual sidebar/nav HTML) -->
+  <div class="layout">
+    <!-- sidebar is injected by nav.js — you only need <main> -->
+    <main class="main">
+      <!-- ... page content ... -->
+    </main>
+  </div>
+
+  <script>
+    /* Page-specific JS only.
+       MabelNav.toggleTheme(), MabelNav.closeSidebar() etc. are globally available.
+       The old toggleTheme() / toggleSidebar() / closeSidebar() still work too
+       (nav.js aliases them) so existing inline onclick="" attributes don't need changing. */
+  </script>
+</body>
+
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<!-- NAV_ACTIVE values per page:
+     index.html       →  NAV_ACTIVE = 'chat';
+     summarize.html   →  NAV_ACTIVE = 'summarize';
+     flashcards.html  →  NAV_ACTIVE = 'flashcards';
+     quiz.html        →  NAV_ACTIVE = 'quiz';
+-->

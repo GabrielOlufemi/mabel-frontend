@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabel — Flashcards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="nav.css">
+  <style>
+    .fc-inner { transition: transform 0.45s cubic-bezier(.4,0,.2,1) !important; }
+    .dot { transition: none !important; }
+
+    .card-shell { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .section-title { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); margin-bottom: 2px; }
+
+    .fc-scene { perspective: 1200px; height: 240px; cursor: pointer; }
+    .fc-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; }
+    .fc-inner.flipped { transform: rotateY(180deg); }
+    .fc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px; text-align: center; }
+    .fc-front { background: var(--surface); border: 1px solid var(--border); }
+    .fc-back { background: var(--text); color: #fff; transform: rotateY(180deg); }
+    body.dark .fc-back { background: #f0f0ee; color: #0a0a0a; }
+    .fc-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; opacity: .45; }
+    .fc-text { font-size: 20px; font-weight: 500; line-height: 1.5; }
+    .fc-hint { font-size: 14px; opacity: .35; margin-top: 4px; }
+
+    .fc-controls { display: flex; align-items: center; justify-content: space-between; }
+    .fc-counter { font-size: 15px; font-weight: 500; color: var(--text-3); font-family: var(--mono); }
+    .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.3s ease; }
+    .fc-actions { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .fc-list { display: flex; flex-direction: column; gap: 3px; }
+    .fc-list-item { padding: 10px 14px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .12s; display: flex; align-items: baseline; gap: 10px; }
+    .fc-list-item:hover { background: var(--surface); border-color: var(--border); }
+    .fc-list-item.current { background: var(--surface); border-color: var(--border-strong); }
+    .fc-list-num { font-size: 13px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; flex-shrink: 0; }
+    .fc-list-q { font-size: 15px; color: var(--text-2); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <script>NAV_ACTIVE = 'flashcards';</script>
+  <script src="nav.js"></script>
+
+  <div class="layout">
+    <main class="main">
+      <div class="page-wrap">
+        <div class="page-topbar">
+          <div class="page-topbar-left">
+            <div class="page-topbar-title">Flashcards</div>
+            <div class="page-topbar-sub" id="topbar-sub">Upload a document to generate study cards</div>
+          </div>
+          <div class="page-topbar-right" id="topbar-right" style="display:none">
+            <div class="doc-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="doc-pill-name"></span>
+              <button onclick="clearDocs()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <button class="nav-btn primary" id="gen-btn" onclick="generateFlashcards()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Generate
+            </button>
+          </div>
+        </div>
+
+        <input type="file" id="file-in" accept=".txt,.md,.pdf,.csv,.docx" multiple style="display:none"/>
+
+        <div class="page-body" id="upload-view">
+          <div class="upload-state">
+            <div class="upload-card" onclick="triggerUpload()">
+              <div class="upload-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <h3>Upload your document</h3>
+              <p>MABEL will generate 8 study flashcards you can flip through and review.</p>
+              <div class="upload-formats">
+                <span class="fmt-tag">pdf</span><span class="fmt-tag">docx</span><span class="fmt-tag">txt</span><span class="fmt-tag">csv</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-body" id="result-view" style="display:none">
+          <div class="page-center">
+            <div class="card-shell" id="fc-loading" style="display:none">
+              <div class="dots-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            </div>
+            <div id="fc-deck" style="display:none;flex-direction:column;gap:16px">
+              <div class="card-shell">
+                <div class="fc-controls">
+                  <button class="nav-btn" id="fc-prev">← Prev</button>
+                  <span class="fc-counter" id="fc-ctr">1 / 8</span>
+                  <button class="nav-btn" id="fc-next">Next →</button>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="fc-prog" style="width:12.5%"></div></div>
+                <div class="fc-scene" id="fc-scene">
+                  <div class="fc-inner" id="fc-inner">
+                    <div class="fc-face fc-front">
+                      <div class="fc-label">Question</div>
+                      <div class="fc-text" id="fc-q">—</div>
+                      <div class="fc-hint">Click to flip</div>
+                    </div>
+                    <div class="fc-face fc-back">
+                      <div class="fc-label">Answer</div>
+                      <div class="fc-text" id="fc-a">—</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="fc-actions">
+                  <button class="nav-btn" onclick="flipCard()">Flip card</button>
+                  <button class="nav-btn" onclick="generateFlashcards()">↺ Regenerate</button>
+                </div>
+              </div>
+              <div>
+                <div class="section-title" style="padding:0 2px 8px">All Cards</div>
+                <div class="fc-list" id="fc-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let docs = [], cards = [], cardIdx = 0;
+
+    document.getElementById('file-in').addEventListener('change', async e => {
+      for (const file of Array.from(e.target.files)) {
+        docs.push({ name: file.name, text: await file.text() });
+      }
+      onDocsLoaded(); e.target.value = '';
+    });
+    function triggerUpload() { document.getElementById('file-in').click(); }
+
+    function onDocsLoaded() {
+      if (!docs.length) return;
+      const name = docs.length === 1 ? docs[0].name : docs.length + ' documents';
+      document.getElementById('doc-pill-name').textContent = name;
+      document.getElementById('topbar-sub').textContent = name;
+      document.getElementById('topbar-right').style.display = 'flex';
+      document.getElementById('upload-view').style.display = 'none';
+      document.getElementById('result-view').style.display = 'block';
+      generateFlashcards();
+    }
+
+    function clearDocs() {
+      docs = []; cards = [];
+      document.getElementById('topbar-right').style.display = 'none';
+      document.getElementById('topbar-sub').textContent = 'Upload a document to generate study cards';
+      document.getElementById('upload-view').style.display = 'block';
+      document.getElementById('result-view').style.display = 'none';
+      document.getElementById('fc-deck').style.display = 'none';
+      document.getElementById('fc-loading').style.display = 'none';
+    }
+
+    async function generateFlashcards() {
+      const btn = document.getElementById('gen-btn');
+      btn.disabled = true; btn.textContent = 'Generating…';
+      document.getElementById('fc-deck').style.display = 'none';
+      document.getElementById('fc-loading').style.display = 'flex';
+      document.getElementById('fc-inner').classList.remove('flipped');
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+            messages: [{ role: 'user', content: 'Generate exactly 8 flashcards from the following document(s). Respond ONLY with a valid JSON array, no markdown.\nFormat: [{"q":"question","a":"answer"}]\n\n' + docs.map(d => 'Document: "' + d.name + '"\n' + d.text.slice(0, Math.floor(7000/docs.length))).join('\n\n---\n\n') }]
+          })
+        });
+        const data = await res.json();
+        const raw = data.content?.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+        cards = JSON.parse(raw); cardIdx = 0;
+        renderCard(); renderCardList();
+        document.getElementById('fc-loading').style.display = 'none';
+        document.getElementById('fc-deck').style.display = 'flex';
+        btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate';
+      } catch(e) {
+        document.getElementById('fc-loading').style.display = 'none';
+        alert('Error: ' + e.message);
+        btn.textContent = 'Retry';
+      }
+      btn.disabled = false;
+    }
+
+    function renderCard() {
+      document.getElementById('fc-q').textContent = cards[cardIdx].q;
+      document.getElementById('fc-a').textContent = cards[cardIdx].a;
+      document.getElementById('fc-ctr').textContent = (cardIdx+1) + ' / ' + cards.length;
+      document.getElementById('fc-prog').style.width = (((cardIdx+1)/cards.length)*100) + '%';
+      document.getElementById('fc-inner').classList.remove('flipped');
+      document.getElementById('fc-prev').disabled = cardIdx === 0;
+      document.getElementById('fc-next').disabled = cardIdx === cards.length - 1;
+      document.querySelectorAll('.fc-list-item').forEach((el,i) => el.classList.toggle('current', i===cardIdx));
+    }
+
+    function renderCardList() {
+      document.getElementById('fc-list').innerHTML = cards.map((c,i) =>
+        '<div class="fc-list-item ' + (i===cardIdx?'current':'') + '" onclick="jumpCard(' + i + ')"><div class="fc-list-num">' + String(i+1).padStart(2,'0') + '</div><div class="fc-list-q">' + esc(c.q) + '</div></div>'
+      ).join('');
+    }
+
+    function flipCard() { document.getElementById('fc-inner').classList.toggle('flipped'); }
+    function jumpCard(i) { cardIdx = i; renderCard(); }
+    document.getElementById('fc-scene').addEventListener('click', flipCard);
+    document.getElementById('fc-prev').addEventListener('click', () => { if(cardIdx>0){cardIdx--;renderCard();} });
+    document.getElementById('fc-next').addEventListener('click', () => { if(cardIdx<cards.length-1){cardIdx++;renderCard();} });
+
+    function esc(t) { const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
+  </script>
+</body>
+</html>

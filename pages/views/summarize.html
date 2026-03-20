@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabel — Summarize</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="nav.css">
+  <style>
+    .dot { transition: none !important; }
+
+    /* ── Two-column body ── */
+    .sm-body {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── Left: scrollable viewer ── */
+    .sm-viewer {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      padding: 24px 24px 32px;
+    }
+    .sm-viewer::-webkit-scrollbar { width: 4px; }
+    .sm-viewer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Controls row ── */
+    .sm-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .sm-controls-left, .sm-controls-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .sm-btn-text {}
+    @media (max-width: 600px) {
+      .sm-btn-text { display: none; }
+    }
+
+    /* ── Style toggle ── */
+    .style-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .style-btn {
+      padding: 0 14px;
+      height: 44px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background .12s, color .12s;
+      white-space: nowrap;
+    }
+    .style-btn:first-child { border-right: 1px solid var(--border); }
+    .style-btn.active {
+      background: var(--surface);
+      color: var(--text);
+    }
+    .style-btn:hover:not(.active) { color: var(--text); }
+
+    /* ── Card shell ── */
+    .card-shell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── Summary content ── */
+    .summary-content {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    .summary-content strong { font-weight: 600; color: var(--text); }
+
+    /* Bullets style */
+    .summary-content .section-heading {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-3);
+      margin: 20px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-content .section-heading:first-child { margin-top: 0; }
+    .summary-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .summary-content ul li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    .summary-content ul li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-3);
+      flex-shrink: 0;
+      margin-top: 9px;
+    }
+
+    /* Key terms style */
+    .summary-content .term-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-content .term-row:last-child { border-bottom: none; }
+    .summary-content .term-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+    .summary-content .term-def {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    /* ── Copy button row ── */
+    .sm-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sm-word-count {
+      font-size: 12px;
+      color: var(--text-3);
+      font-family: var(--mono);
+    }
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      height: 36px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .copy-btn:hover { border-color: var(--border-strong); color: var(--text); }
+    .copy-btn.copied { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+
+    /* ── Loading dots ── */
+    .fc-dots { display: flex; gap: 5px; justify-content: center; padding: 28px 0; }
+    .fc-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); animation: blink 1.2s infinite; }
+    .fc-dot:nth-child(2) { animation-delay: .2s; }
+    .fc-dot:nth-child(3) { animation-delay: .4s; }
+
+    /* ── Right: saved summaries panel ── */
+    .sm-rhs {
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 24px 20px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sm-rhs::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 24px; bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .rhs-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; font-family: var(--mono); flex-shrink: 0; }
+    .sm-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+    .sm-list::-webkit-scrollbar { width: 4px; }
+    .sm-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sm-list-item {
+      padding: 9px 12px; border-radius: var(--radius-sm);
+      border: 1px solid transparent; cursor: pointer;
+      display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0;
+      transition: background .12s, border-color .12s;
+    }
+    .sm-list-item:hover   { background: var(--surface); border-color: var(--border); }
+    .sm-list-item.current { background: var(--surface); border-color: var(--border-strong); }
+    .sm-list-item.deleting { opacity: .4; pointer-events: none; }
+    .sm-list-info { flex: 1; min-width: 0; }
+    .sm-list-title { font-size: 12.5px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+    .sm-list-item.current .sm-list-title { font-weight: 600; }
+    .sm-list-meta  { font-size: 10.5px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+    .sm-list-del {
+      flex-shrink: 0; width: 24px; height: 24px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); border-radius: 4px;
+      display: grid; place-items: center;
+      opacity: 0; transition: opacity .12s, color .12s;
+    }
+    .sm-list-item:hover .sm-list-del { opacity: 1; }
+    .sm-list-del:hover { color: var(--red); }
+
+    .sm-empty { font-size: 12px; color: var(--text-3); font-style: italic; padding: 4px 10px; line-height: 1.5; }
+
+    /* ── Style selector on upload card ── */
+    .style-select-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .style-select-label { font-size: 13px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; }
+    .style-select {
+      padding: 6px 10px; font-size: 13px; font-family: var(--mono);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg); color: var(--text-2);
+      cursor: pointer; outline: none; transition: border-color .12s;
+    }
+    .style-select:hover, .style-select:focus { border-color: var(--border-strong); }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .animate-in { animation: slideUp 0.2s ease; }
+
+    @media (max-width: 960px) { .sm-rhs { display: none; } }
+    @media (max-width: 768px) {
+      .sm-viewer { padding: 16px 16px 24px; }
+      .summary-content { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (!localStorage.getItem('token')) {
+      window.location.href = '../auth/login.html';
+    }
+  </script>
+
+  <script>NAV_ACTIVE = 'summarize';</script>
+  <script src="nav.js"></script>
+
+  <div class="layout">
+    <main class="main">
+      <div class="page-wrap">
+
+        <div class="page-topbar">
+          <div class="page-topbar-left">
+            <div class="page-topbar-title">Summarize</div>
+            <div class="page-topbar-sub" id="topbar-sub">Upload a document to generate a summary</div>
+          </div>
+        </div>
+
+        <div class="page-body" style="overflow:hidden; display:flex; flex-direction:column;">
+          <input type="file" id="file-in" accept=".txt,.md,.pdf,.csv,.docx" style="display:none"/>
+
+          <!-- ── Upload state ── -->
+          <div class="upload-state" id="upload-view">
+            <div class="upload-card" onclick="triggerUpload()">
+              <div class="upload-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+              </div>
+              <h3>Upload your document</h3>
+              <p>MABEL will summarize the key content so you can study faster.</p>
+              <div class="upload-formats">
+                <span class="fmt-tag">pdf</span>
+                <span class="fmt-tag">docx</span>
+                <span class="fmt-tag">txt</span>
+                <span class="fmt-tag">csv</span>
+              </div>
+              <div class="style-select-row" onclick="event.stopPropagation()">
+                <label class="style-select-label" for="style-select-upload">Summary style</label>
+                <select id="style-select-upload" class="style-select">
+                  <option value="bullets">Bullet points</option>
+                  <option value="key_terms">Key terms</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Summary view ── -->
+          <div class="sm-body" id="summary-view" style="display:none">
+
+            <div class="sm-viewer">
+
+              <!-- Loading -->
+              <div class="card-shell" id="sm-loading" style="display:none">
+                <div class="fc-dots">
+                  <div class="fc-dot"></div><div class="fc-dot"></div><div class="fc-dot"></div>
+                </div>
+              </div>
+
+              <!-- Active summary -->
+              <div id="sm-deck" style="display:none; flex-direction:column; gap:16px;">
+
+                <!-- Controls row -->
+                <div class="sm-controls-row">
+                  <div class="sm-controls-left">
+                    <div class="doc-pill">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <span id="doc-pill-name"></span>
+                    </div>
+                    <button class="nav-btn" onclick="triggerUpload()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <span class="sm-btn-text">Upload new</span>
+                    </button>
+                  </div>
+                  <div class="sm-controls-right">
+                    <!-- Style toggle -->
+                    <div class="style-toggle">
+                      <button class="style-btn active" id="style-bullets" onclick="switchStyle('bullets')">Bullets</button>
+                      <button class="style-btn" id="style-key_terms" onclick="switchStyle('key_terms')">Key terms</button>
+                    </div>
+                    <button class="nav-btn primary" id="gen-btn" onclick="generateSummary()">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      <span class="sm-btn-text">Regenerate</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Summary card -->
+                <div class="card-shell animate-in">
+                  <div class="sm-actions">
+                    <span class="sm-word-count" id="sm-word-count"></span>
+                    <button class="copy-btn" id="copy-btn" onclick="copySummary()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy
+                    </button>
+                  </div>
+                  <div class="summary-content" id="summary-content"></div>
+                </div>
+
+              </div><!-- /sm-deck -->
+            </div><!-- /sm-viewer -->
+
+            <!-- Right: saved summaries list -->
+            <div class="sm-rhs">
+              <div class="rhs-label">Saved</div>
+              <div class="sm-list" id="sm-list">
+                <div class="sm-empty" id="sm-list-empty">No summaries yet</div>
+              </div>
+            </div>
+
+          </div><!-- /sm-body -->
+        </div><!-- /page-body -->
+
+      </div><!-- /page-wrap -->
+    </main>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const BASE  = 'http://localhost:8000';
+    const $     = id => document.getElementById(id);
+
+    function authHeaders(extra) {
+      return { 'Authorization': `Bearer ${token}`, ...extra };
+    }
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let currentDocId      = null;
+    let currentDocName    = null;
+    let currentStyle      = 'bullets';
+    let currentSummaryId  = null;
+    let currentContent    = '';
+    let savedSummaries    = [];
+
+    // ── File input ─────────────────────────────────────────────────────────────
+    $('file-in').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      e.target.value = '';
+      // pick up style from upload card selector
+      currentStyle = $('style-select-upload').value;
+      await uploadAndGenerate(file);
+    });
+    function triggerUpload() { $('file-in').click(); }
+
+    // ── Upload → generate ──────────────────────────────────────────────────────
+    async function uploadAndGenerate(file) {
+      currentDocName = file.name;
+      $('doc-pill-name').textContent = file.name;
+      $('topbar-sub').textContent    = file.name;
+
+      const btn = $('gen-btn');
+      if (btn) { btn.disabled = true; btn.querySelector('.sm-btn-text').textContent = 'Uploading…'; }
+      showLoading();
+
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const upRes = await fetch(`${BASE}/api/upload/upload`, {
+          method: 'POST', headers: authHeaders(), body: fd,
+        });
+        if (upRes.status === 401) { window.location.href = '../auth/login.html'; return; }
+        if (!upRes.ok) {
+          const err = await upRes.json().catch(() => ({}));
+          throw new Error(err.detail || `Upload failed (${upRes.status})`);
+        }
+        currentDocId = (await upRes.json()).document_id;
+        if (btn) btn.querySelector('.sm-btn-text').textContent = 'Generating…';
+        await generateSummary();
+      } catch (err) {
+        hideLoading();
+        alert('Error: ' + err.message);
+        showUpload();
+        resetGenBtn();
+      }
+    }
+
+    // ── Generate summary ───────────────────────────────────────────────────────
+    async function generateSummary() {
+      if (!currentDocId) { triggerUpload(); return; }
+
+      const btn = $('gen-btn');
+      if (btn) btn.disabled = true;
+      showLoading();
+      updateStyleToggle();
+
+      try {
+        const res = await fetch(`${BASE}/api/study/summarize`, {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            file_id:  currentDocId,
+            filename: currentDocName,
+            style:    currentStyle,
+          }),
+        });
+        if (res.status === 401) { window.location.href = '../auth/login.html'; return; }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `Generation failed (${res.status})`);
+        }
+
+        const data       = await res.json();
+        currentSummaryId = data.summary_id;
+        currentContent   = data.content;
+
+        $('topbar-sub').textContent = `${currentDocName} — ${styleLabel(currentStyle)}`;
+        renderSummary(currentContent, currentStyle);
+        hideLoading();
+        showSummary();
+        resetGenBtn();
+        loadSavedList(); // refresh sidebar
+
+      } catch (err) {
+        hideLoading();
+        if (currentContent) showSummary(); else showUpload();
+        alert('Error: ' + err.message);
+        resetGenBtn();
+      }
+    }
+
+    // ── Switch style — serve from cache first, only generate if not saved ────────
+    function switchStyle(style) {
+      if (style === currentStyle) return;
+      currentStyle = style;
+      updateStyleToggle();
+
+      // Check if we already have a saved summary for this doc + style
+      const cached = savedSummaries.find(
+        s => s.file_id === currentDocId && s.style === style
+      );
+      if (cached) {
+        loadSaved(cached);
+        return;
+      }
+
+      // Nothing cached — generate a new one
+      generateSummary();
+    }
+
+    function updateStyleToggle() {
+      $('style-bullets').classList.toggle('active', currentStyle === 'bullets');
+      $('style-key_terms').classList.toggle('active', currentStyle === 'key_terms');
+    }
+
+    function styleLabel(style) {
+      return style === 'key_terms' ? 'Key terms' : 'Bullet points';
+    }
+
+    // ── Render summary content ─────────────────────────────────────────────────
+    function renderSummary(text, style) {
+      const el = $('summary-content');
+      if (style === 'key_terms') {
+        el.innerHTML = renderKeyTerms(text);
+      } else {
+        el.innerHTML = renderBullets(text);
+      }
+      // word count
+      const words = text.trim().split(/\s+/).length;
+      $('sm-word-count').textContent = words + ' words';
+    }
+
+    function renderBullets(text) {
+      // Parse **Heading** lines and - bullet lines
+      const lines = text.split('\n');
+      let html = '';
+      let inList = false;
+
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) {
+          if (inList) { html += '</ul>'; inList = false; }
+          continue;
+        }
+        // Bold heading: **Heading** or ## Heading
+        if (/^\*\*(.+)\*\*$/.test(line) || /^#{1,3}\s+(.+)$/.test(line)) {
+          if (inList) { html += '</ul>'; inList = false; }
+          const heading = line.replace(/^\*\*|\*\*$/g, '').replace(/^#{1,3}\s+/, '');
+          html += `<div class="section-heading">${esc(heading)}</div>`;
+        } else if (/^[-•]\s+/.test(line)) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          const content = line.replace(/^[-•]\s+/, '');
+          html += `<li>${renderInline(content)}</li>`;
+        } else {
+          if (inList) { html += '</ul>'; inList = false; }
+          html += `<p style="margin:6px 0">${renderInline(line)}</p>`;
+        }
+      }
+      if (inList) html += '</ul>';
+      return html;
+    }
+
+    function renderKeyTerms(text) {
+      // Parse **Term**: Definition lines
+      const lines = text.split('\n');
+      let html = '';
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) continue;
+        const match = line.match(/^\*\*(.+?)\*\*[:\s—–-]+(.+)$/);
+        if (match) {
+          html += `<div class="term-row">
+            <div class="term-name">${esc(match[1].trim())}</div>
+            <div class="term-def">${renderInline(match[2].trim())}</div>
+          </div>`;
+        } else {
+          // fallback — treat as plain text
+          html += `<div class="term-row"><div class="term-def">${renderInline(line)}</div></div>`;
+        }
+      }
+      return html || `<p style="color:var(--text-3);font-style:italic">No terms found.</p>`;
+    }
+
+    function renderInline(text) {
+      return esc(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+    }
+
+    // ── Copy ───────────────────────────────────────────────────────────────────
+    function copySummary() {
+      if (!currentContent) return;
+      navigator.clipboard.writeText(currentContent).then(() => {
+        const btn = $('copy-btn');
+        btn.classList.add('copied');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+        }, 2000);
+      });
+    }
+
+    // ── Saved summaries list ───────────────────────────────────────────────────
+    async function loadSavedList() {
+      try {
+        const res = await fetch(`${BASE}/api/study/summaries`, {
+          headers: authHeaders(),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        savedSummaries = data.summaries || [];
+        renderSavedList();
+      } catch { /* sidebar is non-critical */ }
+    }
+
+    function relativeTime(ts) {
+      if (!ts) return '';
+      const diff = Date.now() / 1000 - ts;
+      if (diff < 60)        return 'just now';
+      if (diff < 3600)      return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400)     return Math.floor(diff / 3600) + 'h ago';
+      if (diff < 86400 * 7) return Math.floor(diff / 86400) + 'd ago';
+      return new Date(ts * 1000).toLocaleDateString();
+    }
+
+    function renderSavedList() {
+      const list  = $('sm-list');
+      const empty = $('sm-list-empty');
+      list.querySelectorAll('.sm-list-item').forEach(el => el.remove());
+
+      if (!savedSummaries.length) {
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      savedSummaries.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'sm-list-item' + (s.summary_id === currentSummaryId ? ' current' : '');
+        item.dataset.id = s.summary_id;
+        item.innerHTML = `
+          <div class="sm-list-info">
+            <div class="sm-list-title">${esc(s.title)}</div>
+            <div class="sm-list-meta">${styleLabel(s.style)} · ${relativeTime(s.created_at)}</div>
+          </div>
+          <button class="sm-list-del" title="Delete" onclick="deleteSummary(event,'${esc(s.summary_id)}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+          </button>`;
+        item.addEventListener('click', e => {
+          if (!e.target.closest('.sm-list-del')) loadSaved(s);
+        });
+        list.appendChild(item);
+      });
+    }
+
+    function loadSaved(s) {
+      currentSummaryId = s.summary_id;
+      currentDocId     = s.file_id;
+      currentDocName   = s.title;
+      currentStyle     = s.style;
+      currentContent   = s.content;
+
+      $('doc-pill-name').textContent = s.title;
+      $('topbar-sub').textContent    = `${s.title} — ${styleLabel(s.style)}`;
+      updateStyleToggle();
+      renderSummary(s.content, s.style);
+      showSummary();
+      renderSavedList();
+    }
+
+    async function deleteSummary(e, id) {
+      e.stopPropagation();
+      const item = document.querySelector(`.sm-list-item[data-id="${id}"]`);
+      if (item) item.classList.add('deleting');
+      try {
+        const res = await fetch(`${BASE}/api/study/summaries/${id}`, {
+          method: 'DELETE', headers: authHeaders(),
+        });
+        if (!res.ok) { if (item) item.classList.remove('deleting'); return; }
+        if (id === currentSummaryId) {
+          currentSummaryId = null;
+        }
+        await loadSavedList();
+      } catch {
+        if (item) item.classList.remove('deleting');
+      }
+    }
+
+    // ── View helpers ───────────────────────────────────────────────────────────
+    function showLoading() {
+      $('upload-view').style.display  = 'none';
+      $('summary-view').style.display = 'flex';
+      $('sm-loading').style.display   = 'flex';
+      $('sm-deck').style.display      = 'none';
+    }
+    function hideLoading() { $('sm-loading').style.display = 'none'; }
+    function showSummary() {
+      $('upload-view').style.display  = 'none';
+      $('summary-view').style.display = 'flex';
+      $('sm-loading').style.display   = 'none';
+      $('sm-deck').style.display      = 'flex';
+    }
+    function showUpload() {
+      $('upload-view').style.display  = 'flex';
+      $('summary-view').style.display = 'none';
+      $('topbar-sub').textContent     = 'Upload a document to generate a summary';
+    }
+    function resetGenBtn() {
+      const btn = $('gen-btn');
+      if (!btn) return;
+      btn.disabled  = false;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span class="sm-btn-text"> Regenerate</span>';
+    }
+
+    function esc(t) { const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
+
+    // ── Boot ───────────────────────────────────────────────────────────────────
+    loadSavedList();
+  </script>
+</body>
+</html>
