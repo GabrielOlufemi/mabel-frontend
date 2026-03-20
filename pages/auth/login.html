@@ -272,7 +272,7 @@
     </div>
 
     <div class="auth-footer">
-      Don't have an account? <a href="register.html">Create one →</a>
+      Don't have an account? <a href="/auth/register.html">Create one</a>
     </div>
   </div>
 
@@ -338,7 +338,7 @@
         localStorage.setItem('first_name', data.first_name);
         localStorage.setItem('email', data.email);
 
-        window.location.href = '../views/chat.html';
+        window.location.href = '/views/chat.html';
 
       } catch (err) {
         errorText.textContent = 'Could not connect to server. Try again.';
