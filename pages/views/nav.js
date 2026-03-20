@@ -15,7 +15,7 @@
   var pages = [
     { id: 'chat',       label: 'Chat',       href: 'chat.html',        icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
     { id: 'summarize',  label: 'Summarize',  href: 'summarize.html',   icon: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/>' },
-    { id: 'flashcards', label: 'Flashcards', href: 'flashcards2.html', icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>' },
+    { id: 'flashcards', label: 'Flashcards', href: 'flashcards.html', icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>' },
     { id: 'quiz',       label: 'Quiz',       href: 'quiz.html',        icon: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
   ];
 
