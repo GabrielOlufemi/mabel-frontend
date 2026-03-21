@@ -94,24 +94,43 @@
     }
     .option:hover:not(:disabled) { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
     .option:disabled { cursor: not-allowed; }
-    .option.correct { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
-    .option.wrong   { background: var(--red-bg);   border-color: var(--red);          color: var(--red); }
+    /* All unselected wrong options fade out */
+    .option.unselected { opacity: .35; }
+    /* Correct answer — green border + key */
+    .option.correct { background: var(--surface); border-color: var(--green-border); color: var(--text); opacity: 1 !important; }
+    .option.correct .option-key { background: var(--green); color: white; }
+    /* Wrong selected option — red border + key */
+    .option.wrong { background: var(--surface); border-color: var(--red); color: var(--text); opacity: 1 !important; }
+    .option.wrong .option-key { background: var(--red); color: white; }
     .option-key {
-      width: 28px; height: 28px; border-radius: 6px;
+      width: 26px; height: 26px; border-radius: 5px;
       background: var(--border); display: grid; place-items: center;
-      font-size: 12px; font-weight: 700; flex-shrink: 0; font-family: var(--mono);
+      font-size: 11px; font-weight: 700; flex-shrink: 0; font-family: var(--mono);
+      transition: background .12s, color .12s;
     }
-    .option.correct .option-key { background: var(--green-border); color: var(--green); }
-    .option.wrong   .option-key { background: var(--red); color: white; }
 
     /* ── Feedback ── */
-    .feedback { padding: 12px 16px; border-radius: 8px; font-weight: 500; font-size: 15px; }
-    .feedback.ok   { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-    .feedback.fail { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red); }
+    .feedback {
+      padding: 10px 14px; border-radius: 6px;
+      font-size: 13px; font-weight: 500; letter-spacing: .01em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .feedback::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .feedback.ok   { color: var(--green); background: transparent; border: 1px solid var(--green-border); }
+    .feedback.ok::before   { background: var(--green); }
+    .feedback.fail { color: var(--text-2); background: transparent; border: 1px solid var(--border); }
+    .feedback.fail::before { background: var(--red); opacity: .7; }
     .explanation {
-      padding: 10px 14px; border-radius: 8px;
-      font-size: 13px; line-height: 1.6;
-      color: var(--text-2); background: var(--surface);
+      margin-top: 10px;
+      padding: 12px 16px; border-radius: 8px;
+      font-size: 13px; line-height: 1.65;
+      font-family: var(--font);
+      font-style: normal;
+      color: var(--text-2);
+      background: var(--surface);
       border: 1px solid var(--border);
     }
     .qz-next { display: flex; justify-content: flex-end; }
@@ -152,16 +171,24 @@
     .qz-list::-webkit-scrollbar { width: 4px; }
     .qz-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     .qz-list-item {
-      padding: 9px 12px; border-radius: var(--radius-sm);
+      padding: 8px 10px; border-radius: var(--radius-sm);
       border: 1px solid transparent;
       display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0;
       transition: background .12s, border-color .12s;
     }
-    .qz-list-item.current       { background: var(--surface); border-color: var(--border-strong); }
-    .qz-list-item.answered-ok   { border-left: 2px solid var(--green); padding-left: 10px; }
-    .qz-list-item.answered-fail { border-left: 2px solid var(--red);   padding-left: 10px; }
+    .qz-list-item.current { background: var(--surface); border-color: var(--border); }
+    .qz-list-item.answered-ok   .qz-list-num,
+    .qz-list-item.answered-fail .qz-list-num { position: relative; }
+    .qz-list-item.answered-ok   .qz-list-num::after,
+    .qz-list-item.answered-fail .qz-list-num::after {
+      content: ''; display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+      margin-left: 5px; vertical-align: middle; flex-shrink: 0;
+    }
+    .qz-list-item.answered-ok   .qz-list-num::after { background: var(--green); opacity: 1; }
+    .qz-list-item.answered-fail .qz-list-num::after { background: var(--red);   opacity: 1; }
     .qz-list-num { font-size: 11px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; flex-shrink: 0; padding-top: 2px; }
-    .qz-list-q   { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+    .qz-list-q   { font-size: 12.5px; color: var(--text-2); line-height: 1.5; font-weight: 400; }
 
     /* ── Question count selector ── */
     .q-count-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
@@ -273,8 +300,8 @@
                   </div>
                 </div>
 
-                <!-- Stats -->
-                <div class="qz-stats">
+                <!-- Stats — hidden during quiz, shown only on final screen -->
+                <div class="qz-stats" id="qz-stats" style="display:none">
                   <div class="stat-card"><div class="stat-label">Score</div><div class="stat-val" id="q-score">0</div></div>
                   <div class="stat-card"><div class="stat-label">Question</div><div class="stat-val" id="q-num">—</div></div>
                   <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-val" id="q-remain">—</div></div>
@@ -290,7 +317,7 @@
                   <div class="options" id="q-opts"></div>
                   <div id="q-feedback" style="display:none"></div>
                   <div class="qz-next" id="q-next" style="display:none">
-                    <button class="nav-btn primary" id="next-btn" onclick="nextQuestion()">Next question →</button>
+                    <button class="nav-btn primary" id="next-btn" onclick="nextQuestion()">Next question</button>
                   </div>
                 </div>
 
@@ -336,6 +363,7 @@
     const LS_QZ_SCORE     = `qz_score_${_uid}`;
     const LS_QZ_TOPBAR    = `qz_topbar_${_uid}`;
     const LS_QZ_FINISHED  = `qz_finished_${_uid}`;
+    const LS_QZ_RESULTS   = `qz_results_${_uid}`;  // per-question correct/wrong map
 
     function saveSession(finished = false) {
       try {
@@ -346,12 +374,13 @@
         localStorage.setItem(LS_QZ_SCORE,     String(qScore));
         localStorage.setItem(LS_QZ_TOPBAR,    $('topbar-sub').textContent);
         localStorage.setItem(LS_QZ_FINISHED,  finished ? '1' : '0');
+        localStorage.setItem(LS_QZ_RESULTS,   JSON.stringify(results));
       } catch { /* storage unavailable */ }
     }
 
     function clearSession() {
       try {
-        [LS_QZ_QUESTIONS,LS_QZ_DOC_ID,LS_QZ_DOC_NAME,LS_QZ_IDX,LS_QZ_SCORE,LS_QZ_TOPBAR,LS_QZ_FINISHED]
+        [LS_QZ_QUESTIONS,LS_QZ_DOC_ID,LS_QZ_DOC_NAME,LS_QZ_IDX,LS_QZ_SCORE,LS_QZ_TOPBAR,LS_QZ_FINISHED,LS_QZ_RESULTS]
           .forEach(k => localStorage.removeItem(k));
       } catch { /* storage unavailable */ }
     }
@@ -369,6 +398,8 @@
         if (topbar) $('topbar-sub').textContent = topbar;
         if (currentDocName) $('doc-pill-name').textContent = currentDocName;
         if (!questions.length) return 'none';
+        const savedResults = localStorage.getItem(LS_QZ_RESULTS);
+        if (savedResults) results = JSON.parse(savedResults);
         return localStorage.getItem(LS_QZ_FINISHED) === '1' ? 'finished' : 'active';
       } catch { clearSession(); return 'none'; }
     }
@@ -379,6 +410,7 @@
     let qIdx           = 0;
     let qScore         = 0;
     let qAnswered      = false;
+    let results        = {}; // {questionIndex: true|false} — persisted across sessions
 
     // ── File input ─────────────────────────────────────────────────────────────
     $('file-in').addEventListener('change', async e => {
@@ -396,6 +428,9 @@
       renderQuestionList();
       showFinalScore();
     } else if (_restored === 'active') {
+      // Advance to first unanswered question, not just the saved index
+      const firstUnanswered = questions.findIndex((_, i) => results[i] === undefined);
+      if (firstUnanswered !== -1) qIdx = firstUnanswered;
       showQuiz();
       renderQuestionList();
       loadQuestion();
@@ -520,6 +555,10 @@
     function loadQuestion() {
       if (qIdx >= questions.length) { showFinalScore(); return; }
 
+      // Hide stats panel during active quiz
+      const statsEl = $('qz-stats');
+      if (statsEl) statsEl.style.display = 'none';
+
       qAnswered     = false;
       const q       = questions[qIdx];
       const letters = ['A', 'B', 'C', 'D'];
@@ -557,6 +596,7 @@
         btn.disabled = true;
         if (i === correct)                 btn.classList.add('correct');
         else if (i === chosen && !isRight) btn.classList.add('wrong');
+        else                               btn.classList.add('unselected');
       });
 
       const fb = $('q-feedback');
@@ -567,8 +607,10 @@
       if (q.explanation) html += `<div class="explanation">${esc(q.explanation)}</div>`;
       fb.innerHTML = html;
       const isLast = qIdx === questions.length - 1;
-      $('next-btn').textContent = isLast ? 'Finish quiz' : 'Next question →';
+      $('next-btn').textContent = isLast ? 'Finish quiz' : 'Next question';
       $('q-next').style.display = 'flex';
+
+      results[qIdx] = isRight;
 
       const listItem = document.querySelectorAll('.qz-list-item')[qIdx];
       if (listItem) {
@@ -588,12 +630,15 @@
 
     // ── Question list ──────────────────────────────────────────────────────────
     function renderQuestionList() {
-      $('qz-list').innerHTML = questions.map((q, i) =>
-        `<div class="qz-list-item ${i === qIdx ? 'current' : ''}">
+      $('qz-list').innerHTML = questions.map((q, i) => {
+        let cls = i === qIdx ? 'current' : '';
+        if (results[i] === true)  cls = 'answered-ok';
+        if (results[i] === false) cls = 'answered-fail';
+        return `<div class="qz-list-item ${cls}">
           <div class="qz-list-num">${String(i + 1).padStart(2, '0')}</div>
           <div class="qz-list-q">${esc(q.q)}</div>
-        </div>`
-      ).join('');
+        </div>`;
+      }).join('');
     }
 
     // ── Final score — show overlay inside quiz-card without destroying its children
@@ -602,7 +647,9 @@
       const col = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
       const msg = pct >= 80 ? 'Great work!' : pct >= 50 ? 'Good effort!' : 'Keep studying!';
 
-      // Hide question children, show final overlay — never wipe innerHTML
+      // Show stats, hide question children, show final overlay
+      const statsEl = $('qz-stats');
+      if (statsEl) statsEl.style.display = 'grid';
       ['q-label','q-text','q-opts','q-feedback','q-next'].forEach(id => {
         const el = $(id); if (el) el.style.display = 'none';
       });
@@ -631,7 +678,9 @@
     }
 
     function retryQuiz() {
-      qIdx = 0; qScore = 0; qAnswered = false;
+      qIdx = 0; qScore = 0; qAnswered = false; results = {};
+      const statsEl = $('qz-stats');
+      if (statsEl) statsEl.style.display = 'none';
       const overlay = $('final-overlay');
       if (overlay) overlay.style.display = 'none';
       ['q-label','q-text','q-opts','q-feedback','q-next'].forEach(id => {

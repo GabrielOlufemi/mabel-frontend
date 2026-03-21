@@ -195,8 +195,8 @@
     /* Input box */
     .mabel-input-box {
       width: 100%; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px; padding: 18px 18px 14px;
-      display: flex; flex-direction: column; gap: 14px;
+      border-radius: 14px; padding: 12px 14px 10px;
+      display: flex; flex-direction: column; gap: 10px;
       box-shadow: 0 2px 16px rgba(0,0,0,.05); transition: box-shadow 0.2s ease;
       position: relative;
     }
@@ -214,13 +214,13 @@
 
     .mabel-ta {
       background: transparent !important; border: none !important; outline: none !important;
-      resize: none !important; font-family: var(--font) !important; font-size: 16px !important;
-      color: var(--text) !important; min-height: 56px !important; max-height: 180px !important;
-      padding: 0 2px !important; line-height: 1.65 !important; width: 100%; -webkit-appearance: none;
+      resize: none !important; font-family: var(--font) !important; font-size: 14px !important;
+      color: var(--text) !important; min-height: 28px !important; max-height: 180px !important;
+      padding: 0 2px !important; line-height: 1.6 !important; width: 100%; -webkit-appearance: none;
     }
     .mabel-ta::placeholder { color: var(--text-3) !important; font-style: italic; }
 
-    .mabel-input-footer { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .mabel-input-footer { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 10px; }
 
     .attach-wrap { position: relative; flex-shrink: 0; }
     .mabel-attach {
@@ -328,7 +328,7 @@
       .msg-bubble { font-size: 14px; padding: 10px 13px; word-break: break-word; }
       .mabel-dock-fixed { padding: 8px 12px; padding-bottom: max(16px, env(safe-area-inset-bottom)); width: 100%; }
       .mabel-dock-fixed > * { max-width: 100%; }
-      .mabel-input-box { border-radius: 14px; padding: 12px 12px 10px; width: 100%; }
+      .mabel-input-box { border-radius: 12px; padding: 10px 12px 8px; width: 100%; }
       .mabel-input-footer { flex-wrap: wrap; gap: 6px; }
       .mabel-chips { gap: 6px; }
       .mabel-chip { font-size: 12px; padding: 8px 12px; }
@@ -384,7 +384,7 @@
             </div>
 
             <div class="mabel-badge-row" id="mabel-badge-row"></div>
-            <textarea id="chat-ta" class="mabel-ta" placeholder="Ask a question, or upload a document to get started…" rows="3"></textarea>
+            <textarea id="chat-ta" class="mabel-ta" placeholder="Ask a question, or upload a document to get started…" rows="1"></textarea>
             <div class="mabel-input-footer">
               <input type="file" id="file-in" accept=".txt,.pdf,.docx" multiple style="display:none"/>
 
@@ -487,13 +487,7 @@
           </svg>
           New chat
         </button>
-        <div class="history-list nav-text" id="history-list">
-          <div class="history-skeleton">
-            <div class="history-skel-item"></div>
-            <div class="history-skel-item" style="opacity:.6"></div>
-            <div class="history-skel-item" style="opacity:.3"></div>
-          </div>
-        </div>`;
+        <div class="history-list nav-text" id="history-list"></div>`;
     }
 
     // ── Relative timestamp ─────────────────────────────────────────
@@ -525,6 +519,10 @@
     function renderHistoryList(conversations) {
       const list = document.getElementById('history-list');
       if (!list) return;
+
+      // Always clear skeleton on first real render
+      const skeleton = list.querySelector('.history-skeleton');
+      if (skeleton) skeleton.remove();
 
       // ── Diff update — never wipe the whole list, prevents sidebar flicker ──
       // Build a map of what we want

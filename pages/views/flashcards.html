@@ -148,22 +148,24 @@
       font-weight: 500;
       font-family: var(--sans, 'DM Sans', sans-serif);
       border-radius: var(--radius-sm, 6px);
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-2);
+      border: 1px solid var(--text);
+      background: var(--text);
+      color: #fff;
       cursor: pointer;
-      transition: background .12s, border-color .12s;
+      transition: opacity .12s;
       white-space: nowrap;
       text-align: center;
     }
-    .fc-nav-btn:hover:not(:disabled) {
-      background: var(--surface);
-      border-color: var(--border-strong, var(--border));
+    body.dark .fc-nav-btn { background: #f0f0ee; color: #0a0a0a; border-color: #f0f0ee; }
+    .fc-nav-btn:hover:not(:disabled) { opacity: .85; }
+    .fc-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .fc-nav-btn--ghost {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border);
     }
-    .fc-nav-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
+    body.dark .fc-nav-btn--ghost { background: transparent; color: var(--text-2); border-color: var(--border); }
+    .fc-nav-btn--ghost:hover:not(:disabled) { background: var(--surface); border-color: var(--border-strong); opacity: 1; }
 
     /* ── Restart button ── */
     .btn-restart {
@@ -392,8 +394,8 @@
 
                 <!-- ROW 3: Previous | Flip Card | Next -->
                 <div class="fc-nav-row">
-                  <button class="fc-nav-btn" id="fc-prev">← Previous</button>
-                  <button class="fc-nav-btn" onclick="flipCard()">↕ Flip Card</button>
+                  <button class="fc-nav-btn fc-nav-btn--ghost" id="fc-prev">← Previous</button>
+                  <button class="fc-nav-btn fc-nav-btn--ghost" onclick="flipCard()">↕ Flip Card</button>
                   <button class="fc-nav-btn" id="fc-next">Next →</button>
                 </div>
 

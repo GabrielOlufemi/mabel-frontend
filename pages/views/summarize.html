@@ -217,21 +217,34 @@
     .sm-list::-webkit-scrollbar { width: 4px; }
     .sm-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+    /* ── Document group ── */
+    .sm-group { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; margin-bottom: 6px; }
+    .sm-group-title {
+      font-size: 11.5px; font-weight: 600; color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 6px 10px 4px; line-height: 1.4;
+    }
+    .sm-group-time {
+      font-size: 10px; color: var(--text-3); font-family: var(--mono);
+      padding: 0 10px 6px; margin-top: -2px;
+    }
+
+    /* ── Style sub-items ── */
     .sm-list-item {
-      padding: 9px 12px; border-radius: var(--radius-sm);
+      padding: 7px 10px 7px 18px; border-radius: var(--radius-sm);
       border: 1px solid transparent; cursor: pointer;
-      display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
       transition: background .12s, border-color .12s;
     }
     .sm-list-item:hover   { background: var(--surface); border-color: var(--border); }
     .sm-list-item.current { background: var(--surface); border-color: var(--border-strong); }
     .sm-list-item.deleting { opacity: .4; pointer-events: none; }
     .sm-list-info { flex: 1; min-width: 0; }
-    .sm-list-title { font-size: 12.5px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
-    .sm-list-item.current .sm-list-title { font-weight: 600; }
-    .sm-list-meta  { font-size: 10.5px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+    .sm-list-title { font-size: 12px; font-weight: 500; color: var(--text-2); line-height: 1.4; }
+    .sm-list-item.current .sm-list-title { font-weight: 600; color: var(--text); }
+    .sm-list-meta  { font-size: 10px; color: var(--text-3); margin-top: 1px; font-family: var(--mono); }
     .sm-list-del {
-      flex-shrink: 0; width: 24px; height: 24px;
+      flex-shrink: 0; width: 22px; height: 22px;
       background: none; border: none; cursor: pointer;
       color: var(--text-3); border-radius: 4px;
       display: grid; place-items: center;
@@ -260,6 +273,33 @@
     @media (max-width: 768px) {
       .sm-viewer { padding: 16px 16px 24px; }
       .summary-content { font-size: 14px; }
+
+      /* Stack controls: doc pill + upload on top row, style toggle on second row */
+      .sm-controls-row {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sm-controls-left {
+        flex: 1;
+        min-width: 0;
+      }
+      .sm-controls-left .doc-pill {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+      }
+      .sm-controls-right {
+        width: 100%;
+      }
+      .style-toggle {
+        flex: 1;
+      }
+      .style-btn {
+        flex: 1;
+        text-align: center;
+      }
+      /* Hide text labels on upload btn to save space */
+      .sm-btn-text { display: none; }
     }
   </style>
 </head>
@@ -344,10 +384,7 @@
                       <button class="style-btn active" id="style-bullets" onclick="switchStyle('bullets')">Bullets</button>
                       <button class="style-btn" id="style-key_terms" onclick="switchStyle('key_terms')">Key terms</button>
                     </div>
-                    <button class="nav-btn primary" id="gen-btn" onclick="generateSummary()">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                      <span class="sm-btn-text">Regenerate</span>
-                    </button>
+
                   </div>
                 </div>
 
@@ -390,6 +427,56 @@
       return { 'Authorization': `Bearer ${token}`, ...extra };
     }
 
+    // ── localStorage session — namespaced per user ────────────────────────────
+    function getUserIdFromToken() {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+        return decoded.sub || decoded.user_id || decoded.id || 'unknown';
+      } catch { return 'unknown'; }
+    }
+    const _uid           = getUserIdFromToken();
+    const LS_SM_DOC_ID   = `sm_doc_id_${_uid}`;
+    const LS_SM_DOC_NAME = `sm_doc_name_${_uid}`;
+    const LS_SM_STYLE    = `sm_style_${_uid}`;
+    const LS_SM_CONTENT  = `sm_content_${_uid}`;
+    const LS_SM_ID       = `sm_id_${_uid}`;
+    const LS_SM_TOPBAR   = `sm_topbar_${_uid}`;
+
+    function saveSession() {
+      try {
+        localStorage.setItem(LS_SM_DOC_ID,   currentDocId   || '');
+        localStorage.setItem(LS_SM_DOC_NAME, currentDocName || '');
+        localStorage.setItem(LS_SM_STYLE,    currentStyle);
+        localStorage.setItem(LS_SM_CONTENT,  currentContent);
+        localStorage.setItem(LS_SM_ID,       currentSummaryId || '');
+        localStorage.setItem(LS_SM_TOPBAR,   $('topbar-sub').textContent);
+      } catch { /* storage unavailable */ }
+    }
+
+    function clearSession() {
+      try {
+        [LS_SM_DOC_ID,LS_SM_DOC_NAME,LS_SM_STYLE,LS_SM_CONTENT,LS_SM_ID,LS_SM_TOPBAR]
+          .forEach(k => localStorage.removeItem(k));
+      } catch { /* storage unavailable */ }
+    }
+
+    function restoreSession() {
+      try {
+        const content = localStorage.getItem(LS_SM_CONTENT);
+        if (!content) return false;
+        currentDocId     = localStorage.getItem(LS_SM_DOC_ID)   || null;
+        currentDocName   = localStorage.getItem(LS_SM_DOC_NAME) || null;
+        currentStyle     = localStorage.getItem(LS_SM_STYLE)    || 'bullets';
+        currentContent   = content;
+        currentSummaryId = localStorage.getItem(LS_SM_ID)       || null;
+        const topbar     = localStorage.getItem(LS_SM_TOPBAR);
+        if (topbar) $('topbar-sub').textContent = topbar;
+        if (currentDocName) $('doc-pill-name').textContent = currentDocName;
+        return true;
+      } catch { return false; }
+    }
+
     // ── State ──────────────────────────────────────────────────────────────────
     let currentDocId      = null;
     let currentDocName    = null;
@@ -403,15 +490,53 @@
       const file = e.target.files[0];
       if (!file) return;
       e.target.value = '';
-      // pick up style from upload card selector
       currentStyle = $('style-select-upload').value;
+
+      // Check if we already have summaries for this filename — no point
+      // re-uploading and burning tokens if we have seen this doc before.
+      const existing = savedSummaries.filter(s => s.title === file.name);
+      if (existing.length) {
+        // Find the one matching the selected style, or fall back to whatever exists
+        const match = existing.find(s => s.style === currentStyle) || existing[0];
+        currentStyle = match.style;
+        loadSaved(match);
+        // Prefetch the other style quietly if it is missing
+        const otherStyle = currentStyle === 'bullets' ? 'key_terms' : 'bullets';
+        const hasOther = existing.some(s => s.style === otherStyle);
+        if (!hasOther) _prefetchSecondaryStyle(match.file_id, file.name, otherStyle);
+        return;
+      }
+
       await uploadAndGenerate(file);
     });
     function triggerUpload() { $('file-in').click(); }
 
-    // ── Upload → generate ──────────────────────────────────────────────────────
+    // ── Raw API call for a single style ──────────────────────────────────────
+    async function _fetchSummary(docId, filename, style) {
+      const res = await fetch(`${BASE}/api/study/summarize`, {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ file_id: docId, filename, style }),
+      });
+      if (res.status === 401) { window.location.href = '../auth/login.html'; return null; }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Generation failed (${res.status})`);
+      }
+      return res.json();
+    }
+
+    // ── Background prefetch — fire and forget the secondary style ────────────
+    function _prefetchSecondaryStyle(docId, filename, style) {
+      _fetchSummary(docId, filename, style)
+        .then(() => loadSavedList())  // refresh sidebar once it lands
+        .catch(err => logger.debug?.(`Background prefetch for ${style} failed: ${err.message}`));
+    }
+
+    // ── Upload → generate primary style first, prefetch secondary quietly ────
     async function uploadAndGenerate(file) {
       currentDocName = file.name;
+      clearSession();
       $('doc-pill-name').textContent = file.name;
       $('topbar-sub').textContent    = file.name;
 
@@ -432,7 +557,26 @@
         }
         currentDocId = (await upRes.json()).document_id;
         if (btn) btn.querySelector('.sm-btn-text').textContent = 'Generating…';
-        await generateSummary();
+
+        // Generate primary style first — user sees it immediately
+        const primaryStyle   = currentStyle;
+        const secondaryStyle = primaryStyle === 'bullets' ? 'key_terms' : 'bullets';
+
+        const primaryData    = await _fetchSummary(currentDocId, file.name, primaryStyle);
+        currentSummaryId     = primaryData.summary_id;
+        currentContent       = primaryData.content;
+
+        $('topbar-sub').textContent = `${currentDocName} — ${styleLabel(currentStyle)}`;
+        renderSummary(currentContent, currentStyle);
+        saveSession();
+        hideLoading();
+        showSummary();
+        resetGenBtn();
+        loadSavedList();
+
+        // Fire secondary style in the background — no await, no loading state
+        _prefetchSecondaryStyle(currentDocId, file.name, secondaryStyle);
+
       } catch (err) {
         hideLoading();
         alert('Error: ' + err.message);
@@ -441,7 +585,7 @@
       }
     }
 
-    // ── Generate summary ───────────────────────────────────────────────────────
+    // ── Regenerate — same sequential pattern ─────────────────────────────────
     async function generateSummary() {
       if (!currentDocId) { triggerUpload(); return; }
 
@@ -451,31 +595,22 @@
       updateStyleToggle();
 
       try {
-        const res = await fetch(`${BASE}/api/study/summarize`, {
-          method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({
-            file_id:  currentDocId,
-            filename: currentDocName,
-            style:    currentStyle,
-          }),
-        });
-        if (res.status === 401) { window.location.href = '../auth/login.html'; return; }
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || `Generation failed (${res.status})`);
-        }
+        const secondaryStyle = currentStyle === 'bullets' ? 'key_terms' : 'bullets';
+        const primaryData    = await _fetchSummary(currentDocId, currentDocName, currentStyle);
 
-        const data       = await res.json();
-        currentSummaryId = data.summary_id;
-        currentContent   = data.content;
+        currentSummaryId = primaryData.summary_id;
+        currentContent   = primaryData.content;
 
         $('topbar-sub').textContent = `${currentDocName} — ${styleLabel(currentStyle)}`;
         renderSummary(currentContent, currentStyle);
+        saveSession();
         hideLoading();
         showSummary();
         resetGenBtn();
-        loadSavedList(); // refresh sidebar
+        loadSavedList();
+
+        // Prefetch secondary in the background
+        _prefetchSecondaryStyle(currentDocId, currentDocName, secondaryStyle);
 
       } catch (err) {
         hideLoading();
@@ -485,23 +620,48 @@
       }
     }
 
-    // ── Switch style — serve from cache first, only generate if not saved ────────
-    function switchStyle(style) {
+    // ── Switch style — always instant, both pre-generated on upload ─────────
+    async function switchStyle(style) {
       if (style === currentStyle) return;
       currentStyle = style;
       updateStyleToggle();
 
-      // Check if we already have a saved summary for this doc + style
-      const cached = savedSummaries.find(
+      // Check in-memory cache first
+      let cached = savedSummaries.find(
         s => s.file_id === currentDocId && s.style === style
       );
+
+      // If not found, the list may not have refreshed yet — fetch it and retry
+      if (!cached) {
+        await loadSavedList();
+        cached = savedSummaries.find(
+          s => s.file_id === currentDocId && s.style === style
+        );
+      }
+
       if (cached) {
         loadSaved(cached);
         return;
       }
 
-      // Nothing cached — generate a new one
-      generateSummary();
+      // True fallback: this style genuinely hasn't been generated yet
+      showLoading();
+      try {
+        const data = await _fetchSummary(currentDocId, currentDocName, style);
+        if (!data) return;
+        currentSummaryId = data.summary_id;
+        currentContent   = data.content;
+        $('topbar-sub').textContent = `${currentDocName} — ${styleLabel(style)}`;
+        renderSummary(currentContent, currentStyle);
+        saveSession();
+        hideLoading();
+        showSummary();
+        loadSavedList();
+      } catch (err) {
+        hideLoading();
+        if (currentContent) showSummary();
+        alert('Error: ' + err.message);
+      }
     }
 
     function updateStyleToggle() {
@@ -543,9 +703,9 @@
           if (inList) { html += '</ul>'; inList = false; }
           const heading = line.replace(/^\*\*|\*\*$/g, '').replace(/^#{1,3}\s+/, '');
           html += `<div class="section-heading">${esc(heading)}</div>`;
-        } else if (/^[-•]\s+/.test(line)) {
+        } else if (/^[-•*]\s+/.test(line)) {
           if (!inList) { html += '<ul>'; inList = true; }
-          const content = line.replace(/^[-•]\s+/, '');
+          const content = line.replace(/^[-•*]\s+/, '');
           html += `<li>${renderInline(content)}</li>`;
         } else {
           if (inList) { html += '</ul>'; inList = false; }
@@ -623,7 +783,8 @@
     function renderSavedList() {
       const list  = $('sm-list');
       const empty = $('sm-list-empty');
-      list.querySelectorAll('.sm-list-item').forEach(el => el.remove());
+      // Clear existing groups and items
+      list.querySelectorAll('.sm-group, .sm-list-item').forEach(el => el.remove());
 
       if (!savedSummaries.length) {
         empty.style.display = 'block';
@@ -631,24 +792,44 @@
       }
       empty.style.display = 'none';
 
+      // Group by file_id, preserving newest-first order
+      const groups = new Map();
       savedSummaries.forEach(s => {
-        const item = document.createElement('div');
-        item.className = 'sm-list-item' + (s.summary_id === currentSummaryId ? ' current' : '');
-        item.dataset.id = s.summary_id;
-        item.innerHTML = `
-          <div class="sm-list-info">
-            <div class="sm-list-title">${esc(s.title)}</div>
-            <div class="sm-list-meta">${styleLabel(s.style)} · ${relativeTime(s.created_at)}</div>
-          </div>
-          <button class="sm-list-del" title="Delete" onclick="deleteSummary(event,'${esc(s.summary_id)}')">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            </svg>
-          </button>`;
-        item.addEventListener('click', e => {
-          if (!e.target.closest('.sm-list-del')) loadSaved(s);
+        if (!groups.has(s.file_id)) groups.set(s.file_id, []);
+        groups.get(s.file_id).push(s);
+      });
+
+      groups.forEach((summaries, fileId) => {
+        const group = document.createElement('div');
+        group.className = 'sm-group';
+
+        // Use the title and timestamp from the most recent entry in the group
+        const newest = summaries[0];
+        group.innerHTML = `
+          <div class="sm-group-title">${esc(newest.title)}</div>
+          <div class="sm-group-time">${relativeTime(newest.created_at)}</div>`;
+
+        // Add a sub-item for each style in this group
+        summaries.forEach(s => {
+          const item = document.createElement('div');
+          item.className = 'sm-list-item' + (s.summary_id === currentSummaryId ? ' current' : '');
+          item.dataset.id = s.summary_id;
+          item.innerHTML = `
+            <div class="sm-list-info">
+              <div class="sm-list-title">${styleLabel(s.style)}</div>
+            </div>
+            <button class="sm-list-del" title="Delete" onclick="deleteSummary(event,'${esc(s.summary_id)}')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            </button>`;
+          item.addEventListener('click', e => {
+            if (!e.target.closest('.sm-list-del')) loadSaved(s);
+          });
+          group.appendChild(item);
         });
-        list.appendChild(item);
+
+        list.appendChild(group);
       });
     }
 
@@ -663,6 +844,7 @@
       $('topbar-sub').textContent    = `${s.title} — ${styleLabel(s.style)}`;
       updateStyleToggle();
       renderSummary(s.content, s.style);
+      saveSession();
       showSummary();
       renderSavedList();
     }
@@ -714,7 +896,18 @@
     function esc(t) { const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
 
     // ── Boot ───────────────────────────────────────────────────────────────────
-    loadSavedList();
+    // Always load the saved list first so the sidebar is populated and
+    // switchStyle can find cached summaries immediately on return visits.
+    (async () => {
+      await loadSavedList();
+      if (restoreSession()) {
+        updateStyleToggle();
+        renderSummary(currentContent, currentStyle);
+        showSummary();
+        // Re-render sidebar now that currentSummaryId is known — marks active item
+        renderSavedList();
+      }
+    })();
   </script>
 </body>
 </html>

@@ -24,7 +24,7 @@ body.dark::before{opacity:.3}
 
 /* ── Nav bar ── */
 .nav{
-  position:fixed;top:0;left:220px;right:0;
+  position:fixed;top:0;left:200px;right:0;
   height:var(--nav-h);
   display:flex;align-items:center;justify-content:flex-end;
   padding:0 20px;
@@ -59,33 +59,32 @@ body.dark .nav-btn.primary{background:#f0f0ee;color:#0a0a0a;border-color:#f0f0ee
 
 
 /* ── Sidebar ── */
-.sidebar{width:220px;flex-shrink:0;height:100vh;background:rgba(247,247,245,.8);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1)}
+.sidebar{width:200px;flex-shrink:0;height:100vh;background:rgba(247,247,245,.8);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1)}
 body.dark .sidebar{background:rgba(10,10,10,.95)}
-.sidebar-brand{display:flex;align-items:center;gap:8px;height:var(--nav-h);padding:0 10px 0 16px;flex-shrink:0;width:100%;box-sizing:border-box}
-.sidebar-brand-name{font-size:18px;font-weight:600;color:var(--text);white-space:nowrap}
+.sidebar-brand{display:flex;align-items:center;gap:6px;height:var(--nav-h);padding:0 8px 0 14px;flex-shrink:0;width:100%;box-sizing:border-box}
+.sidebar-brand-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;letter-spacing:-0.01em}
 .sidebar-arrow-btn{
   display:flex;align-items:center;justify-content:center;
-  width:40px;height:40px;
+  width:28px;height:28px;
   margin-left:auto;flex-shrink:0;
-  background:transparent;border:1px solid var(--border);
-  color:var(--text-3);cursor:pointer;border-radius:8px;
+  background:transparent;border:none;
+  color:var(--text-3);cursor:pointer;border-radius:6px;
 }
-.sidebar-arrow-btn:hover{color:var(--text);background:var(--surface);border-color:var(--border-strong)}
+.sidebar-arrow-btn:hover{color:var(--text);background:var(--border)}
 .sidebar-arrow-btn svg{transition:transform .25s cubic-bezier(.4,0,.2,1)}
-.sidebar.collapsed{width:60px}
-.sidebar.collapsed .sidebar-brand{padding:0}
-.sidebar.collapsed .sidebar-arrow-btn{width:100%;height:var(--nav-h);border:none;border-radius:0;border-bottom:1px solid var(--border)}
-.sidebar.collapsed .sidebar-brand-name,.sidebar.collapsed .nav-badge,.sidebar.collapsed .sidebar-label,.sidebar.collapsed .sidebar-sep,.sidebar.collapsed .user-info,.sidebar.collapsed .label-text,.sidebar.collapsed .nav-text,.sidebar.collapsed .sidebar-item--muted,.sidebar.collapsed .sidebar-label-row{display:none}
-.sidebar.collapsed .sidebar-item,.sidebar.collapsed a.sidebar-item{justify-content:center;padding:0;gap:0;height:44px;border-radius:var(--radius-sm);border-color:transparent !important;box-shadow:none !important;margin:1px 6px}
-.sidebar.collapsed .sidebar-item:hover,.sidebar.collapsed a.sidebar-item:hover{background:var(--surface)}
-.sidebar.collapsed .sidebar-item.active,.sidebar.collapsed a.sidebar-item.active{background:var(--surface);position:relative}
-.sidebar.collapsed .sidebar-item.active::before,.sidebar.collapsed a.sidebar-item.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;background:var(--text);border-radius:0 2px 2px 0}
-.sidebar.collapsed .sidebar-item svg,.sidebar.collapsed a.sidebar-item svg{width:20px;height:20px;opacity:.45}
-.sidebar.collapsed .sidebar-item:hover svg,.sidebar.collapsed a.sidebar-item:hover svg{opacity:.75}
-.sidebar.collapsed .sidebar-item.active svg,.sidebar.collapsed a.sidebar-item.active svg{opacity:1}
-.sidebar.collapsed .user-row{justify-content:center;padding:8px 0;gap:0}
+.sidebar.collapsed{width:56px}
+.sidebar.collapsed .sidebar-brand{padding:0;justify-content:center}
+.sidebar.collapsed .sidebar-arrow-btn{width:28px;height:28px;margin:0}
+.sidebar.collapsed .sidebar-brand-name,.sidebar.collapsed .nav-badge,.sidebar.collapsed .sidebar-label,.sidebar.collapsed .sidebar-sep,.sidebar.collapsed .user-info,.sidebar.collapsed .label-text,.sidebar.collapsed .sidebar-item .nav-text,.sidebar.collapsed a.sidebar-item .nav-text,.sidebar.collapsed .sidebar-item--muted,.sidebar.collapsed .sidebar-label-row{display:none}
+.sidebar.collapsed .sidebar-item,.sidebar.collapsed a.sidebar-item{justify-content:center;padding:0;gap:0;height:36px;border-radius:var(--radius-sm);border:none !important;box-shadow:none !important;margin:1px 8px;background:transparent}
+.sidebar.collapsed .sidebar-item:hover,.sidebar.collapsed a.sidebar-item:hover{background:var(--border)}
+.sidebar.collapsed .sidebar-item.active,.sidebar.collapsed a.sidebar-item.active{background:var(--border)}
+.sidebar.collapsed .sidebar-item svg,.sidebar.collapsed a.sidebar-item svg{width:17px;height:17px;opacity:.4}
+.sidebar.collapsed .sidebar-item:hover svg,.sidebar.collapsed a.sidebar-item:hover svg{opacity:.7}
+.sidebar.collapsed .sidebar-item.active svg,.sidebar.collapsed a.sidebar-item.active svg{opacity:.9}
+.sidebar.collapsed .user-row{justify-content:center;padding:6px 0;gap:0}
 .sidebar.collapsed .user-row *:not(.avatar){display:none}
-.sidebar-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding:4px 8px 8px}
+.sidebar-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px;padding:2px 6px 6px}
 .sidebar-scroll::-webkit-scrollbar{width:3px}
 .sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .sidebar-toggle{display:none!important}
@@ -93,28 +92,28 @@ body.dark .sidebar{background:rgba(10,10,10,.95)}
 
 /* Sidebar items — bigger, more breathable */
 .sidebar-item,a.sidebar-item{
-  display:flex;align-items:center;gap:11px;
-  padding:11px 12px;
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;
   border-radius:var(--radius-sm);
-  font-size:15px;font-weight:500;
+  font-size:13.5px;font-weight:500;
   color:var(--text-2);cursor:pointer;
   transition:all .12s;border:1px solid transparent;
   white-space:nowrap;text-decoration:none;
-  min-height:44px; /* Apple HIG tap target */
+  min-height:36px;
 }
 .sidebar-item:hover,a.sidebar-item:hover{background:var(--surface);color:var(--text);border-color:var(--border)}
 .sidebar-item.active,a.sidebar-item.active{background:var(--surface);color:var(--text);border-color:var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.sidebar-item svg,a.sidebar-item svg{flex-shrink:0;opacity:.55;width:18px;height:18px}
+.sidebar-item svg,a.sidebar-item svg{flex-shrink:0;opacity:.55;width:16px;height:16px}
 .sidebar-item.active svg,a.sidebar-item.active svg{opacity:1}
-.sidebar-sep{height:1px;background:var(--border);margin:10px 12px}
-.sidebar-footer{flex-shrink:0;padding:10px 8px 16px;border-top:1px solid var(--border)}
-.user-row{display:flex;align-items:center;gap:9px;padding:9px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;text-decoration:none;min-height:44px}
+.sidebar-sep{height:1px;background:var(--border);margin:6px 10px}
+.sidebar-footer{flex-shrink:0;padding:8px 6px 12px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:background .12s;text-decoration:none;min-height:36px}
 .user-row:hover{background:var(--surface)}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--text);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600;flex-shrink:0}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--text);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600;flex-shrink:0}
 body.dark .avatar{background:#f0f0ee;color:#0a0a0a}
 .user-info{flex:1;min-width:0}
-.user-name{font-size:15px;font-weight:600;color:var(--text)}
-.user-plan{font-size:13px;color:var(--green);font-weight:500;display:flex;align-items:center;gap:4px}
+.user-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-plan{font-size:11px;color:var(--green);font-weight:500;display:flex;align-items:center;gap:3px}
 
 /* ── New chat button in sidebar ── */
 .sidebar-new-chat-btn {
@@ -268,12 +267,12 @@ body.dark .page-topbar{background:rgba(10,10,10,.7)}
     display: none;
   }
   .sidebar.collapsed .sidebar-scroll {
-    padding: 8px 0;
+    padding: 4px 0;
     align-items: stretch;
     gap: 0;
   }
   .sidebar.collapsed .sidebar-footer {
-    padding: 10px 0 16px;
+    padding: 8px 0 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
