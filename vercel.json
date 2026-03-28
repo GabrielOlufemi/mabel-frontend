@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/pages/auth/login.html" },
+    { "source": "/login", "destination": "/pages/auth/login.html" },
+    { "source": "/login.html", "destination": "/pages/auth/login.html" },
+    { "source": "/register", "destination": "/pages/auth/register.html" },
+    { "source": "/register.html", "destination": "/pages/auth/register.html" },
+    { "source": "/chat", "destination": "/pages/views/chat.html" },
+    { "source": "/chat.html", "destination": "/pages/views/chat.html" },
+    { "source": "/summarize", "destination": "/pages/views/summarize.html" },
+    { "source": "/summarize.html", "destination": "/pages/views/summarize.html" },
+    { "source": "/flashcards", "destination": "/pages/views/flashcards.html" },
+    { "source": "/flashcards.html", "destination": "/pages/views/flashcards.html" },
+    { "source": "/quiz", "destination": "/pages/views/quiz.html" },
+    { "source": "/quiz.html", "destination": "/pages/views/quiz.html" },
+    { "source": "/settings", "destination": "/pages/views/settings.html" },
+    { "source": "/settings.html", "destination": "/pages/views/settings.html" }
+  ]
+}
