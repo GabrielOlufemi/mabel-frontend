@@ -31,15 +31,15 @@
     }
     #panel-chat::after {
       content: '';
-      position: absolute; bottom: 0; left: 0; right: 0; height: 340px;
-      background: linear-gradient(to top, var(--bg) 0%, var(--bg) 55%, rgba(247,247,245,0) 100%);
-      backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-      -webkit-mask-image: linear-gradient(to top, black 60%, transparent 100%);
-      mask-image: linear-gradient(to top, black 60%, transparent 100%);
+      position: absolute; bottom: 0; left: 0; right: 0; height: 260px;
+      background: linear-gradient(to top, var(--bg) 0%, var(--bg) 45%, rgba(247,247,245,0) 100%);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      -webkit-mask-image: linear-gradient(to top, black 55%, transparent 100%);
+      mask-image: linear-gradient(to top, black 55%, transparent 100%);
       pointer-events: none; z-index: 2; transition: background 0.2s ease;
     }
     body.dark #panel-chat::after {
-      background: linear-gradient(to top, #0a0a0a 0%, #0a0a0a 55%, rgba(10,10,10,0) 100%);
+      background: linear-gradient(to top, #0a0a0a 0%, #0a0a0a 45%, rgba(10,10,10,0) 100%);
     }
     .mabel-dock-fixed { position: relative; z-index: 3; }
 
@@ -182,16 +182,43 @@
     .msg-file-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
     /* Source cards */
-    .msg-sources { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 6px; }
-    body.dark .msg-sources { border-top-color: rgba(255,255,255,.08); }
-    .msg-source-card { background: var(--bg); border-left: 2px solid var(--green-border); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 8px 12px; }
+    .msg-sources {
+      margin-top: 16px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .msg-sources-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--text-3); font-family: var(--mono);
+      margin-bottom: 6px;
+    }
+    .msg-source-card {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 12px;
+      transition: background .12s;
+    }
+    .msg-source-card:hover { background: var(--bg); }
+    .msg-source-num {
+      font-size: 10px; font-weight: 700; font-family: var(--mono);
+      color: var(--text-3); flex-shrink: 0; margin-top: 1px;
+      width: 16px;
+    }
+    .msg-source-body { flex: 1; min-width: 0; }
     .msg-source-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
-    .msg-source-tag { font-size: 10px; font-weight: 700; color: var(--green); font-family: var(--mono); letter-spacing: .06em; text-transform: uppercase; }
-    .msg-source-score { font-size: 10px; font-weight: 500; color: var(--text-3); font-family: var(--mono); }
-    .msg-source-filename { font-size: 11.5px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .msg-source-text { font-size: 12px; color: var(--text-3); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    /* Inline citation highlights e.g. [Source 1] */
-    .cite-ref { display: inline-flex; align-items: center; background: transparent; border: 1px solid var(--green); color: var(--green); border-radius: 3px; padding: 0px 4px; font-size: 10px; font-weight: 600; font-family: var(--mono); vertical-align: middle; white-space: nowrap; line-height: 1.5; }
+    .msg-source-tag { font-size: 11.5px; font-weight: 600; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .msg-source-score { font-size: 10px; font-weight: 500; color: var(--text-3); font-family: var(--mono); flex-shrink: 0; margin-left: 8px; }
+    .msg-source-text { font-size: 12px; color: var(--text-3); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    /* Inline citation — subtle superscript style */
+    .cite-ref {
+      display: inline-flex; align-items: center;
+      background: var(--border); color: var(--text-2);
+      border-radius: 3px; padding: 1px 5px;
+      font-size: 10px; font-weight: 600; font-family: var(--mono);
+      vertical-align: middle; white-space: nowrap; line-height: 1.5;
+      border: none;
+    }
+    body.dark .cite-ref { background: #2a2a2a; color: var(--text-2); }
     /* Input box */
     .mabel-input-box {
       width: 100%; background: var(--surface); border: 1px solid var(--border);
@@ -417,12 +444,12 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
               Summarize
             </button>
-            <button class="mabel-chip" onclick="location.href='flashcards.html'">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <button class="mabel-chip" onclick="location.href='flashcards2.html'">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="12" rx="2"/><path d="M6 4h14a2 2 0 0 1 2 2v10" opacity=".5"/></svg>
               Flashcards
             </button>
             <button class="mabel-chip" onclick="location.href='quiz.html'">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               Quiz
             </button>
           </div>
@@ -469,6 +496,17 @@
     let conversationId  = null;
     let activeHistoryId = null;
 
+    // ── Chat session persistence ────────────────────────────────────
+    // Saves the last active conversation ID so returning to chat.html
+    // restores the last open session rather than showing a blank screen.
+    const LS_CHAT_CID = 'chat_last_cid';
+    function saveLastConversation(cid) {
+      try { localStorage.setItem(LS_CHAT_CID, cid || ''); } catch { /* storage unavailable */ }
+    }
+    function getLastConversation() {
+      try { return localStorage.getItem(LS_CHAT_CID) || null; } catch { return null; }
+    }
+
     // ────────────────────────────────────────────────────────────────
     //  HISTORY SIDEBAR — upgrade the pre-rendered #history-section
     //  that nav.js already injected. We just replace its contents
@@ -514,6 +552,7 @@
         console.error('Failed to load history:', err);
         renderHistoryList([]);
       }
+      // Always returns so callers can .then() after history is rendered
     }
 
     function renderHistoryList(conversations) {
@@ -624,6 +663,32 @@
 
         wrap.innerHTML = '';
         data.turns.forEach(turn => {
+          // Restore document file cards above the user message
+          // (mirrors what addMsg does at send time).
+          if (turn.sources && turn.sources.length > 0) {
+            const seen = new Set();
+            const fileRow = document.createElement('div');
+            fileRow.className = 'msg-file-row';
+            turn.sources.forEach(src => {
+              const fname = src.filename || 'Unknown';
+              if (seen.has(fname)) return;
+              seen.add(fname);
+              const sn = fname.length > 32 ? fname.slice(0, 30) + '…' : fname;
+              const card = document.createElement('div');
+              card.className = 'msg-file-card';
+              card.innerHTML = `
+                <div class="msg-file-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div>
+                  <div class="msg-file-name">${esc(sn)}</div>
+                  <div class="msg-file-sub">From library</div>
+                </div>`;
+              fileRow.appendChild(card);
+            });
+            wrap.appendChild(fileRow);
+          }
+
           const uEl = document.createElement('div');
           uEl.className = 'msg user restored';
           uEl.innerHTML = '<div class="msg-bubble">' + renderMd(turn.user) + '</div>';
@@ -638,6 +703,17 @@
           aEl.innerHTML = '<div class="msg-bubble">' + aHtml + '</div>';
           wrap.appendChild(aEl);
         });
+
+        // Restore document selection from this conversation's history.
+        // Only re-activate docs that still exist in the user's library.
+        activeDocs = new Set();
+        if (data.active_document_ids && data.active_document_ids.length > 0) {
+          const libraryIds = new Set(libraryDocs.map(d => d.file_id));
+          data.active_document_ids.forEach(id => {
+            if (libraryIds.has(id)) activeDocs.add(id);
+          });
+        }
+        renderPicker(); updateAttachBtn(); refreshSendBtn();
 
         wrap.scrollTop = 99999;
       } catch (err) {
@@ -655,6 +731,12 @@
       activeHistoryId = null;
       conversationId  = null;
       chatStarted     = false;
+      saveLastConversation(null);
+
+      // Clear document selection for the fresh conversation
+      activeDocs = new Set();
+      uploadedDocs = [];
+      renderPicker(); updateAttachBtn(); renderDocTags();
 
       document.getElementById('chat-msgs').innerHTML = '';
       document.getElementById('chat-hero').classList.remove('hidden');
@@ -950,6 +1032,7 @@
         const data = await res.json();
         conversationId  = data.conversation_id;
         activeHistoryId = data.conversation_id;
+        saveLastConversation(conversationId);
 
         document.querySelectorAll('.history-item').forEach(el => {
           el.classList.toggle('active', el.dataset.cid === conversationId);
@@ -985,19 +1068,21 @@
 
     function renderSources(sources) {
       if (!sources || !sources.length) return '';
-      let html = '<div class="msg-sources">';
+      let html = '<div class="msg-sources"><div class="msg-sources-label">Sources</div>';
       sources.forEach((src, i) => {
         const n = i + 1;
         const score = src.rerank_score != null
           ? `<span class="msg-source-score">${src.rerank_score.toFixed(2)}</span>`
           : '';
         html += `<div class="msg-source-card">
-          <div class="msg-source-top">
-            <span class="msg-source-tag">Source ${n}</span>
-            ${score}
+          <div class="msg-source-num">${n}</div>
+          <div class="msg-source-body">
+            <div class="msg-source-top">
+              <span class="msg-source-tag">${esc(src.filename)}</span>
+              ${score}
+            </div>
+            <div class="msg-source-text">${esc(src.text)}</div>
           </div>
-          <div class="msg-source-filename">${esc(src.filename)}</div>
-          <div class="msg-source-text">${esc(src.text)}</div>
         </div>`;
       });
       html += '</div>';
@@ -1019,6 +1104,9 @@
       setTimeout(() => {
         injectHistorySection();
         loadLibrary();
+        // Restore last conversation immediately in parallel with history load
+        const lastCid = getLastConversation();
+        if (lastCid) loadSession(lastCid);
         loadHistory();
       }, 0);
     });

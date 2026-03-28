@@ -136,11 +136,42 @@
     .qz-next { display: flex; justify-content: flex-end; }
 
     /* ── Final score ── */
-    .final { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 24px; text-align: center; }
-    .final-pct   { font-size: 72px; font-weight: 700; font-family: var(--mono); line-height: 1; }
-    .final-label { font-size: 20px; font-weight: 600; color: var(--text-2); }
-    .final-sub   { font-size: 15px; color: var(--text-3); margin-bottom: 4px; }
-    .final-btns  { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .final {
+      display: flex; flex-direction: column; gap: 14px;
+      padding: 20px 22px;
+    }
+    .final-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .final-score-block { display: flex; align-items: baseline; gap: 10px; }
+    .final-pct {
+      font-size: 36px; font-weight: 700; font-family: var(--mono);
+      line-height: 1; letter-spacing: -0.02em;
+    }
+    .final-label { font-size: 11px; font-weight: 500; color: var(--text-3); font-family: var(--mono); }
+    .final-badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      font-size: 11px; font-weight: 600; font-family: var(--mono);
+      border: 1px solid;
+    }
+    .final-badge.pass  { color: var(--green); border-color: var(--green-border); background: var(--green-bg); }
+    .final-badge.mid   { color: var(--amber); border-color: rgba(217,119,6,.3); background: rgba(217,119,6,.06); }
+    .final-badge.fail  { color: var(--red);   border-color: rgba(220,38,38,.25); background: var(--red-bg); }
+    .final-breakdown {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .final-stat {
+      display: flex; flex-direction: column; gap: 3px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      background: var(--bg); border: 1px solid var(--border);
+    }
+    .final-stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); font-family: var(--mono); }
+    .final-stat-val   { font-size: 20px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+    .final-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
     /* ── Loading dots ── */
     .fc-dots { display: flex; gap: 5px; justify-content: center; padding: 28px 0; }
@@ -317,7 +348,7 @@
                   <div class="options" id="q-opts"></div>
                   <div id="q-feedback" style="display:none"></div>
                   <div class="qz-next" id="q-next" style="display:none">
-                    <button class="nav-btn primary" id="next-btn" onclick="nextQuestion()">Next question</button>
+                    <button class="nav-btn primary" id="next-btn" onclick="nextQuestion()">Next question →</button>
                   </div>
                 </div>
 
@@ -607,7 +638,7 @@
       if (q.explanation) html += `<div class="explanation">${esc(q.explanation)}</div>`;
       fb.innerHTML = html;
       const isLast = qIdx === questions.length - 1;
-      $('next-btn').textContent = isLast ? 'Finish quiz' : 'Next question';
+      $('next-btn').textContent = isLast ? 'Finish quiz' : 'Next question →';
       $('q-next').style.display = 'flex';
 
       results[qIdx] = isRight;
@@ -661,14 +692,36 @@
         overlay.id = 'final-overlay';
         $('quiz-card').appendChild(overlay);
       }
+      const wrong    = questions.length - qScore;
+      const badgeClass = pct >= 80 ? 'pass' : pct >= 50 ? 'mid' : 'fail';
+      const badgeText  = pct >= 80 ? 'Passed' : pct >= 50 ? 'Needs review' : 'Needs work';
+
       overlay.innerHTML = `
         <div class="final">
-          <div class="final-pct" style="color:${col}">${pct}%</div>
-          <div class="final-label">${msg}</div>
-          <div class="final-sub">${qScore} out of ${questions.length} correct</div>
+          <div class="final-header">
+            <div class="final-score-block">
+              <div class="final-pct" style="color:${col}">${pct}%</div>
+              <div class="final-label">OVERALL SCORE</div>
+            </div>
+            <div class="final-badge ${badgeClass}">${badgeText}</div>
+          </div>
+          <div class="final-breakdown">
+            <div class="final-stat">
+              <div class="final-stat-label">Correct</div>
+              <div class="final-stat-val" style="color:var(--green)">${qScore}</div>
+            </div>
+            <div class="final-stat">
+              <div class="final-stat-label">Wrong</div>
+              <div class="final-stat-val" style="color:var(--red)">${wrong}</div>
+            </div>
+            <div class="final-stat">
+              <div class="final-stat-label">Total</div>
+              <div class="final-stat-val">${questions.length}</div>
+            </div>
+          </div>
           <div class="final-btns">
-            <button class="nav-btn" onclick="retryQuiz()">↺ Same questions</button>
-            <button class="nav-btn primary" onclick="generateQuiz()">↻ New questions</button>
+            <button class="nav-btn" onclick="retryQuiz()">↺ Retry same</button>
+            <button class="nav-btn primary" onclick="generateQuiz()">↻ New quiz</button>
           </div>
         </div>`;
       overlay.style.display = 'block';

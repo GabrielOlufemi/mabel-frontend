@@ -17,8 +17,8 @@
       // Speech bubble — universally understood for conversation
       icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
     { id: 'summarize',  label: 'Summarize',  href: 'summarize.html',
-      // Converging lines — text condensing/compressing into fewer points
-      icon: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="6" y1="11" x2="18" y2="11"/><line x1="9" y1="16" x2="15" y2="16"/>' },
+      // Bullet list — matches the chip icon on chat.html
+      icon: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/>' },
     { id: 'flashcards', label: 'Flashcards', href: 'flashcards.html',
       // Stacked cards — two overlapping rectangles, clearly a deck of cards
       icon: '<rect x="2" y="6" width="16" height="12" rx="2"/><path d="M6 4h14a2 2 0 0 1 2 2v10" opacity=".5"/>' },
@@ -199,6 +199,57 @@
       document.getElementById('sidebar').classList.add('collapsed');
     }
     updateArrow();
+
+    // On non-chat pages, load conversation history so the sidebar
+    // stays consistent. chat.html manages its own via injectHistorySection().
+    if (active !== 'chat') {
+      var _token = localStorage.getItem('token');
+      if (_token) {
+        var _base = 'http://localhost:8000';
+        fetch(_base + '/api/conversations/', {
+          headers: { 'Authorization': 'Bearer ' + _token }
+        })
+        .then(function(r) { return r.ok ? r.json() : { conversations: [] }; })
+        .then(function(data) {
+          var conversations = data.conversations || [];
+          var histList = document.getElementById('history-list');
+          if (!histList) return;
+
+          histList.innerHTML = '';
+
+          if (!conversations.length) {
+            histList.innerHTML = '<div style="font-size:12px;color:var(--text-3);font-style:italic;padding:4px 10px 8px;line-height:1.5">No sessions yet</div>';
+            return;
+          }
+
+          conversations.forEach(function(conv) {
+            var item = document.createElement('a');
+            item.href = 'chat.html';
+            item.style.cssText = 'display:flex;flex-direction:column;padding:7px 10px;border-radius:6px;cursor:pointer;text-decoration:none;transition:background .12s;';
+            item.onmouseover = function() { this.style.background = 'var(--surface)'; };
+            item.onmouseout  = function() { this.style.background = 'transparent'; };
+
+            var title = conv.title || 'Untitled';
+            var diff  = Date.now() / 1000 - (conv.last_updated || 0);
+            var time  = diff < 60 ? 'just now'
+                      : diff < 3600 ? Math.floor(diff / 60) + 'm ago'
+                      : diff < 86400 ? Math.floor(diff / 3600) + 'h ago'
+                      : Math.floor(diff / 86400) + 'd ago';
+
+            item.innerHTML =
+              '<span style="font-size:12.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+                + title.slice(0, 40) + (title.length > 40 ? '…' : '')
+              + '</span>'
+              + '<span style="font-size:10.5px;color:var(--text-3);margin-top:1px;font-family:var(--mono)">'
+                + conv.turn_count + ' turn' + (conv.turn_count !== 1 ? 's' : '') + ' · ' + time
+              + '</span>';
+
+            histList.appendChild(item);
+          });
+        })
+        .catch(function() { /* non-critical */ });
+      }
+    }
   }
 
   if (document.readyState === 'loading') {
